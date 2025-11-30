@@ -20,7 +20,6 @@ function App() {
   const [squares, setSquares] = useState<("#" | "X" | "O")[]>(
     Array(9).fill("#")
   );
-  const [xIsNext, setXIsNext] = useState(true);
   const [scoreBoard, setScoreBoard] = useState({ wins: 0, draws: 0, loses: 0 });
   const [gettingAIMove, setGettingAIMove] = useState(false);
   const [errorGettingAIMove, setErrorGettingAIMove] = useState(false);
@@ -32,10 +31,13 @@ function App() {
     currentState: string
   ): Promise<string | null> {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/next-state`, {
-        previous_state: previousState,
-        current_state: currentState,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/next-state`,
+        {
+          previous_state: previousState,
+          current_state: currentState,
+        }
+      );
 
       return response.data.next_state as string;
     } catch (error) {
@@ -54,7 +56,7 @@ function App() {
       return;
     const next = squares.slice();
     next[i] = "X";
-    setXIsNext((prev) => !prev);
+    setSquares(next);
 
     let nextBoardStatus = getBoardStatus(next);
     if (nextBoardStatus?.winner) {
@@ -62,15 +64,11 @@ function App() {
         ...prev,
         loses: prev.loses + 1,
       }));
-      setSquares(next);
-      return;
     } else if (nextBoardStatus?.draw) {
       setScoreBoard((prev) => ({
         ...prev,
         draws: prev.draws + 1,
       }));
-      setSquares(next);
-      return;
     }
 
     // make a query to the backend to decide which move to make next instead of randomly choosing
@@ -95,7 +93,7 @@ function App() {
           break;
         }
       }
-      setXIsNext((prev) => !prev);
+      setSquares(next);
 
       nextBoardStatus = getBoardStatus(next);
       if (nextBoardStatus?.winner) {
@@ -103,17 +101,14 @@ function App() {
           ...prev,
           wins: prev.wins + 1,
         }));
-        setSquares(next);
         return;
       } else if (nextBoardStatus?.draw) {
         setScoreBoard((prev) => ({
           ...prev,
           draws: prev.draws + 1,
         }));
-        setSquares(next);
         return;
       }
-      setSquares(next);
     }
   }
 
@@ -121,7 +116,6 @@ function App() {
     setErrorGettingAIMove(false);
     setGettingAIMove(false);
     setSquares(Array(9).fill("#"));
-    setXIsNext(true);
   }
 
   function resetScore() {
@@ -145,7 +139,10 @@ function App() {
                 </span>
               ) : boardStatus?.winner ? (
                 <span>
-                  <PlayerSpan player={xIsNext ? "AI (O)" : "You (X)"} /> wins!
+                  <PlayerSpan
+                    player={boardStatus?.winner === "O" ? "AI (O)" : "You (X)"}
+                  />{" "}
+                  wins!
                 </span>
               ) : gettingAIMove ? (
                 <span>
@@ -155,8 +152,7 @@ function App() {
                 <span>Something Went Wrong! try to refresh the page.</span>
               ) : (
                 <span>
-                  <PlayerSpan player={xIsNext ? "You (X)" : "AI (O)"} /> Play
-                  Next
+                  <PlayerSpan player={"You (X)"} /> Play Next
                 </span>
               )}
             </p>
