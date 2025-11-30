@@ -142,7 +142,7 @@ function App() {
                   <PlayerSpan
                     player={boardStatus?.winner === "O" ? "AI (O)" : "You (X)"}
                   />{" "}
-                  wins!
+                  win{boardStatus?.winner === "O" && "s"}!
                 </span>
               ) : gettingAIMove ? (
                 <span>
