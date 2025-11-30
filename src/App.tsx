@@ -32,7 +32,7 @@ function App() {
     currentState: string
   ): Promise<string | null> {
     try {
-      const response = await axios.post("http://localhost:8000/next-state", {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/next-state`, {
         previous_state: previousState,
         current_state: currentState,
       });
